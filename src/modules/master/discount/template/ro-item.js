@@ -1,6 +1,7 @@
 import { inject, bindable } from 'aurelia-framework';
 import { Service } from '../service';
 var FinishedItemLoader = require("./../../../../loader/finishgood-loader-discount");
+const moment = require('moment');
 
 @inject(Service)
 export class ROItem {
@@ -12,7 +13,7 @@ export class ROItem {
         this.service = service;
     }
 
-    activate(context) {
+    async activate(context) {
         this.data = context.data;
         this.error = context.error;
         this.options = context.context.options;
@@ -28,29 +29,60 @@ export class ROItem {
         if (!this.readOnly) {
             this.columns.push("");
         }
+        this.innerData = context.context.options.innerData;
     }
 
     async realizationOrderChanged(newValue, oldValue) {
-        if (newValue) {
+        var innerData = this.innerData;
+        var processedData = {
+            realizationOrder: newValue,
+            itemsDetails: []
+        };
+
+        if (newValue && newValue.realizationOrder != 'NO') {
             var products = await FinishedItemLoader(newValue.realizationOrder);
-            var processedData = {
-                realizationOrder: newValue,
-                itemsDetails: []
-            };
 
             for (let item of products) {
                 var hasItem = await this.service.getItemByCode(item.code);
+
                 if (hasItem.length > 0) {
-                    item["error"] = "Produk sudah digunakan, gunakan Produk yg lain";
+
+                    hasItem.forEach(dataItem => {
+                        var formStart = moment(innerData.startDate).startOf('day');
+                        var formEnd = moment(innerData.endDate).endOf('day');
+                        var itemStart = moment(dataItem.startDate).startOf('day');
+                        var itemEnd = moment(dataItem.endDate).endOf('day');
+
+                        if (innerData.discountOne == dataItem.discountOne &&
+                            innerData.discountTwo == dataItem.discountTwo) {
+
+                            if (formStart >= itemStart &&
+                                formStart <= itemEnd ||
+                                itemStart >= formStart &&
+                                itemStart <= formEnd) {
+                                item["error"] = "Produk sudah digunakan";
+                            }
+                        } else {
+
+                            if (formStart >= itemStart &&
+                                formStart <= itemEnd ||
+                                itemStart >= formStart &&
+                                itemStart <= formEnd) {
+                                item["error"] = "Produk sudah digunakan";
+                            }
+                        }
+                    });
                 }
+
                 processedData.itemsDetails.push(item);
             }
 
             Object.assign(this.data, processedData);
-            this.isShowing = true;
         } else {
-            this.data = {};
+            this.data.realizationOrder = processedData.realizationOrder;
+            this.data.itemsDetails = processedData.itemsDetails;
         }
+        this.isShowing = true;
     }
 
     get articleRealizationOrderLoader() {
@@ -60,7 +92,8 @@ export class ROItem {
                     if (keyword.toUpperCase() === "NONE" ||
                         keyword.toUpperCase() === "NO") {
                         this.isShowing = true;
-                        return this.data['realizationOrder'] = {'realizationOrder': 'NO' };
+                        data = [];
+                        return this.removeRedundantRO(data);
                     } else {
                         return this.removeRedundantRO(data);
                     }
@@ -70,9 +103,15 @@ export class ROItem {
     }
 
     removeRedundantRO(data) {
-        var realizationOrders = data.map(item => {
-            return { 'realizationOrder': item.article.realizationOrder };
-        });
+        var realizationOrders = [];
+
+        if (data.length > 0) {
+            realizationOrders = data.map(item => {
+                return { 'realizationOrder': item.article.realizationOrder };
+            });
+        } else {
+            realizationOrders.push({ 'realizationOrder': 'NO' });
+        }
 
         function removeDuplicates(originalArray, prop) {
             var newArray = [];

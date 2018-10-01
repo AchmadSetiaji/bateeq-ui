@@ -32,7 +32,7 @@
             label="Mulai Berlaku" 
             value.bind="data.startDate" 
             error.bind="error.startDate" 
-            read-only.bind="readOnly" 
+            read-only.bind="readOnly"
             options.bind="controlOptions">
         </au-datepicker>
 
@@ -62,6 +62,7 @@
             items.bind="storeNameOptions"
             options.bind="controlOptions">
         </au-dropdown>
+        <multiline label="Keterangan" value.bind="data.information" error.bind="error.information" read-only.bind="readOnly" ></multiline>
 
         <au-collection 
               items.bind="data.items" 
@@ -69,6 +70,7 @@
               columns.bind="itemsColumns.columns" 
               add.bind="itemsColumns.onAdd"
               read-only.bind="readOnly"
+              options.bind="detailOptions"
               item-template="modules/master/discount/template/ro-item">
         </au-collection>
     </au-input-form>
