@@ -95,11 +95,10 @@ export class DataForm {
       { header: "Conversion", value: "Conversion" },
       { header: "Total", value: "Total" }
     ],
-    onAdd: function() {
+    onAdd: function () {
       this.data.CostCalculationRetail_Materials.push({});
     }.bind(this),
     onRemove: function () {
-      console.log("Material removed")
     }.bind(this)
   };
 
@@ -178,28 +177,28 @@ export class DataForm {
     this.imageSrc = this.data.ImageFile;
 
     this.defaultOL = await this.ongkosService
-      .search({ keyword: "OL" })
+      .search({ keyword: "OL R" })
       .then(results => {
         let result = results.data[0] ? results.data[0] : this.defaultRate;
         result.CalculatedValue = 0;
         return result;
       });
     this.defaultOTL1 = await this.ongkosService
-      .search({ keyword: "OTL 1" })
+      .search({ keyword: "OTL 1 R" })
       .then(results => {
         let result = results.data[0] ? results.data[0] : this.defaultRate;
         result.CalculatedValue = 0;
         return result;
       });
     this.defaultOTL2 = await this.ongkosService
-      .search({ keyword: "OTL 2" })
+      .search({ keyword: "OTL 2 R" })
       .then(results => {
         let result = results.data[0] ? results.data[0] : this.defaultRate;
         result.CalculatedValue = 0;
         return result;
       });
     this.defaultOTL3 = await this.ongkosService
-      .search({ keyword: "OTL 3" })
+      .search({ keyword: "OTL 3 R" })
       .then(results => {
         let result = results.data[0] ? results.data[0] : this.defaultRate;
         result.CalculatedValue = 0;
